@@ -143,7 +143,13 @@ class WebpackHere {
 			},
 			cache: {},
 			devtool: false,
-			resolve: {extensions: [".jsx", ".webpack.js", ".web.js", ".js", ".json"],},
+			resolve: {
+				modules: ['node_modules', this.nodeModules],
+				extensions: [".jsx", ".webpack.js", ".web.js", ".js", ".json"],
+			},
+			resolveLoader: {
+				modules: ['node_modules', this.nodeModules],
+			},
 			watchOptions: {
 				ignored: [`/node_modules/`],
 			},
@@ -168,19 +174,18 @@ class WebpackHere {
 					exclude: /node_modules/,
 					query: {
 						presets: [
-							"babel-preset-react",
-							"babel-preset-env"
+							require("@babel/preset-react"),
+							require("@babel/preset-env"),
 						],
-
 						plugins: [
-							"babel-plugin-transform-runtime",
-							"babel-plugin-external-helpers",
-							"babel-plugin-transform-decorators-legacy",
-							"babel-plugin-transform-class-properties",
-							"babel-plugin-transform-object-rest-spread",
-							"babel-plugin-syntax-async-functions",
-							"babel-plugin-dynamic-import-webpack",
-							"babel-plugin-transform-regenerator"
+							require('babel-plugin-dynamic-import-webpack'),
+							require('@babel/plugin-external-helpers'),
+							require('@babel/plugin-syntax-async-generators'),
+							[require("@babel/plugin-proposal-decorators"), { legacy: true }],
+							require('@babel/plugin-proposal-class-properties'),
+							require('@babel/plugin-proposal-object-rest-spread'),
+							require('@babel/plugin-transform-regenerator'),
+							require('@babel/plugin-transform-runtime'),
 						]
 					}
 				}]
