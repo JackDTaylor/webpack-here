@@ -132,7 +132,7 @@ class WebpackHere {
 	generateConfig(env) {
 		const cfg = JSON.parse(env.webpackHereConfig);
 
-		return {
+		return this.applyUserConfig({
 			mode: 'none',
 			entry: `${this.cwd}\\${cfg.entryFile}`,
 			output: {
@@ -182,7 +182,7 @@ class WebpackHere {
 							require('@babel/plugin-external-helpers'),
 							require('@babel/plugin-syntax-async-generators'),
 							[require("@babel/plugin-proposal-decorators"), { legacy: true }],
-							require('@babel/plugin-proposal-class-properties'),
+							[require('@babel/plugin-proposal-class-properties'), { loose : true }],
 							require('@babel/plugin-proposal-object-rest-spread'),
 							require('@babel/plugin-transform-regenerator'),
 							require('@babel/plugin-transform-runtime'),
@@ -190,6 +190,23 @@ class WebpackHere {
 					}
 				}]
 			}
+		});
+	}
+
+	applyUserConfig(baseConfig) {
+		const userConfigFile = `${this.cwd}/.webpack-here.config.js`;
+
+		if(!FS.existsSync(userConfigFile)) {
+			return baseConfig;
+		}
+
+		console.log('Applying user config from', userConfigFile);
+
+		const userConfig = require(userConfigFile);
+
+		return {
+			...baseConfig,
+			...userConfig,
 		};
 	}
 
