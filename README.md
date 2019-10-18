@@ -40,7 +40,7 @@ I intentionally turned minification and sourcemaps off to reduce build time.
 You can override it in your local `.webpack-here.config.js` file.
 
 ### Public path for `babel-plugin-dynamic-import-webpack`
-If you want to use dynamic imports, you need to make sure `output.publicPath` option is correctly.
+If you want to use dynamic imports, you need to make sure `output.publicPath` option is set correctly.
 
 By default `webpack-here` tries to assume a public path using your Git root or IntelliJ IDEA project root.
 Otherwise it will use `/` as public path.

@@ -42,7 +42,7 @@ class WebpackHere {
 
 		while(Path.basename(dir)) {
 			if(FS.existsSync(Path.join(dir, '.idea')) || FS.existsSync(Path.join(dir, '.git'))) {
-				return '/' + subdirs.reverse().join('/');
+				return '/' + subdirs.reverse().join('/') + '/';
 			}
 
 			subdirs.push(Path.basename(dir));
