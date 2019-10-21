@@ -6,6 +6,10 @@ const LogOnCompile = require('./LogOnCompile');
 const NotifyPHPStormOnCompile = require('./NotifyPHPStormOnCompile');
 const ROOT = Path.resolve(__dirname + '/..');
 
+const injectDependency = function(name) {
+	return require(name).default;
+};
+
 class WebpackHere {
 	static Run() {
 		const wh = new WebpackHere(process.cwd(), process.argv.slice(2));
@@ -124,18 +128,18 @@ class WebpackHere {
 					exclude: /node_modules/,
 					query: {
 						presets: [
-							require("@babel/preset-react"),
-							require("@babel/preset-env"),
+							injectDependency("@babel/preset-react"),
+							injectDependency("@babel/preset-env"),
 						],
 						plugins: [
-							require('babel-plugin-dynamic-import-webpack'),
-							require('@babel/plugin-external-helpers'),
-							require('@babel/plugin-syntax-async-generators'),
-							[require("@babel/plugin-proposal-decorators"), { legacy: true }],
-							[require('@babel/plugin-proposal-class-properties'), { loose : true }],
-							require('@babel/plugin-proposal-object-rest-spread'),
-							require('@babel/plugin-transform-regenerator'),
-							require('@babel/plugin-transform-runtime'),
+							injectDependency('babel-plugin-dynamic-import-webpack'),
+							injectDependency('@babel/plugin-external-helpers'),
+							injectDependency('@babel/plugin-syntax-async-generators'),
+							[injectDependency("@babel/plugin-proposal-decorators"), { legacy: true }],
+							[injectDependency('@babel/plugin-proposal-class-properties'), { loose : true }],
+							injectDependency('@babel/plugin-proposal-object-rest-spread'),
+							injectDependency('@babel/plugin-transform-regenerator'),
+							injectDependency('@babel/plugin-transform-runtime'),
 						]
 					}
 				}]
@@ -197,7 +201,7 @@ class WebpackHere {
 				chunkFilename: cfg.outputFile.replace(/\.js$/, '.[name].js'),
 				publicPath: cfg.publicPath,
 			},
-			"plugins.[]": [new NotifyPHPStormOnCompile(`${this.cwd}\\${cfg.outputFile}`)],
+			"plugins[]": [new NotifyPHPStormOnCompile(`${this.cwd}\\${cfg.outputFile}`)],
 		};
 	}
 
