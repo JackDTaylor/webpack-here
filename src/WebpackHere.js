@@ -4,6 +4,7 @@ const FS = require('fs');
 const Webpack = require('webpack');
 const LogOnCompile = require('./LogOnCompile');
 const NotifyPHPStormOnCompile = require('./NotifyPHPStormOnCompile');
+const TouchOnCompile = require('./TouchOnCompile');
 const ROOT = Path.resolve(__dirname + '/..');
 
 const injectDependency = function(name) {
@@ -58,8 +59,17 @@ class WebpackHere {
 		return '/';
 	}
 
+	get defaultRestartFile() {
+		if(process.platform === 'win32') {
+			return false;
+		}
+
+		return Path.resolve(this.cwd, 'tmp', 'restart.txt');
+	}
+
 	get entryFile() { return (this.args[0] || `${Path.basename(this.cwd)}.jsx`); }
 	get outputFile() { return (this.args[1] || `${Path.basename(this.cwd)}.js`); }
+	get restartFile() { return this.namedArgs['restartFile'] || this.defaultRestartFile; }
 
 	get publicPath() {
 		return this.namedArgs['publicPath'] || this.assumedPublicPath;
@@ -74,7 +84,11 @@ class WebpackHere {
 	}
 
 	get webpackExecutable() {
+		if(process.platform === 'win32') {
 		return ROOT + '/node_modules/.bin/webpack.cmd';
+	}
+
+		return ROOT + '/node_modules/.bin/webpack';
 	}
 
 	get webpackParams() {
@@ -86,8 +100,8 @@ class WebpackHere {
 	}
 
 	get webpackHereConfig() {
-		const {entryFile, outputFile, publicPath} = this;
-		return {entryFile, outputFile, publicPath};
+		const {entryFile, outputFile, restartFile, publicPath} = this;
+		return {entryFile, outputFile, restartFile, publicPath};
 	}
 
 	get webpackHereConfigParams() {
@@ -193,15 +207,29 @@ class WebpackHere {
 	generateLocalOverride(env) {
 		const cfg = JSON.parse(env.webpackHereConfig);
 
+		const entryFile = Path.resolve(this.cwd, cfg.entryFile);
+		const outputFile = Path.resolve(this.cwd, cfg.outputFile);
+		const restartFile = Path.resolve(this.cwd, cfg.restartFile);
+
+		const plugins = [];
+
+		if(process.platform === 'win32') {
+			plugins.push(new NotifyPHPStormOnCompile(outputFile));
+		}
+
+		if(cfg.restartFile) {
+			plugins.push(new TouchOnCompile(restartFile));
+		}
+
 		return {
-			"entry": `${this.cwd}\\${cfg.entryFile}`,
+			"entry": entryFile,
 			"output": {
 				path: this.cwd,
 				filename: cfg.outputFile,
 				chunkFilename: cfg.outputFile.replace(/\.js$/, '.[name].js'),
 				publicPath: cfg.publicPath,
 			},
-			"plugins[]": [new NotifyPHPStormOnCompile(`${this.cwd}\\${cfg.outputFile}`)],
+			"plugins[]": plugins,
 		};
 	}
 
@@ -322,7 +350,11 @@ class WebpackHere {
 	}
 
 	get isConfigMode() {
+		if(process.platform === 'win32') {
 		return /webpack-here\.js$/.test(process.argv[1]) === false;
+	}
+
+		return /webpack-here$/.test(process.argv[1]) === false;
 	}
 
 	execute() {
