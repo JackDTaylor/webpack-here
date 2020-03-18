@@ -84,11 +84,17 @@ class WebpackHere {
 	}
 
 	get webpackExecutable() {
+		let executable = '/node_modules/.bin/webpack';
+
 		if(process.platform === 'win32') {
-		return ROOT + '/node_modules/.bin/webpack.cmd';
+			executable += '.cmd';
+		}
+
+		if(FS.existsSync(ROOT + executable)) {
+			return ROOT + executable;
 	}
 
-		return ROOT + '/node_modules/.bin/webpack';
+		return ROOT + '/../../' + executable;
 	}
 
 	get webpackParams() {
@@ -209,7 +215,6 @@ class WebpackHere {
 
 		const entryFile = Path.resolve(this.cwd, cfg.entryFile);
 		const outputFile = Path.resolve(this.cwd, cfg.outputFile);
-		const restartFile = Path.resolve(this.cwd, cfg.restartFile);
 
 		const plugins = [];
 
@@ -218,7 +223,7 @@ class WebpackHere {
 		}
 
 		if(cfg.restartFile) {
-			plugins.push(new TouchOnCompile(restartFile));
+			plugins.push(new TouchOnCompile(Path.resolve(this.cwd, cfg.restartFile)));
 		}
 
 		return {
