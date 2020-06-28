@@ -81,7 +81,10 @@ class WebpackHere {
 	}
 
 	get nodeModules() {
-		return ROOT + '/node_modules';
+		return [
+			Path.resolve(ROOT + '/..'),
+			ROOT + '/node_modules'
+		];
 	}
 
 	get webpackExecutable() {
@@ -121,11 +124,11 @@ class WebpackHere {
 			cache: {},
 			devtool: false,
 			resolve: {
-				modules: ['node_modules', this.nodeModules],
+				modules: ['node_modules', ...this.nodeModules],
 				extensions: [".jsx", ".webpack.js", ".web.js", ".js", ".json"],
 			},
 			resolveLoader: {
-				modules: ['node_modules', this.nodeModules],
+				modules: ['node_modules', ...this.nodeModules],
 			},
 			watchOptions: {
 				ignored: [`/node_modules/`],
