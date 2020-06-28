@@ -24,6 +24,7 @@ class WebpackHere {
 		this.cwd = cwd;
 		this.args = args.filter(x => !namedParamRegex.test(x));
 		this.namedArgs = {};
+		this.debug = args.indexOf('--debug') >= 0;
 
 		const namedArgs = args.filter(x => namedParamRegex.test(x));
 
@@ -34,7 +35,7 @@ class WebpackHere {
 			this.namedArgs[name] = value;
 		}
 
-		console.log('WebpackHere started');
+		console.log('WebpackHere started', this.debug ? 'in DEBUG mode' : '');
 		console.log(this.cwd);
 		console.log(this.args);
 		console.log(this.namedArgs);
@@ -106,8 +107,8 @@ class WebpackHere {
 	}
 
 	get webpackHereConfig() {
-		const {entryFile, outputFile, restartFile, publicPath} = this;
-		return {entryFile, outputFile, restartFile, publicPath};
+		const {entryFile, outputFile, restartFile, publicPath, debug} = this;
+		return {entryFile, outputFile, restartFile, publicPath, debug};
 	}
 
 	get webpackHereConfigParams() {
@@ -210,11 +211,9 @@ class WebpackHere {
 		console.log('\tThis command will generate a `outputFile.js` file with entry of `entryFile.jsx`');
 	}
 
-	generateLocalOverride(env) {
-		const cfg = JSON.parse(env.webpackHereConfig);
-
-		const entryFile = Path.resolve(this.cwd, cfg.entryFile);
-		const outputFile = Path.resolve(this.cwd, cfg.outputFile);
+	generateLocalOverride(env, params) {
+		const entryFile = Path.resolve(this.cwd, params.entryFile);
+		const outputFile = Path.resolve(this.cwd, params.outputFile);
 
 		const plugins = [];
 
@@ -222,28 +221,30 @@ class WebpackHere {
 			plugins.push(new NotifyPHPStormOnCompile(outputFile));
 		}
 
-		if(cfg.restartFile) {
-			plugins.push(new TouchOnCompile(Path.resolve(this.cwd, cfg.restartFile)));
+		if(params.restartFile) {
+			plugins.push(new TouchOnCompile(Path.resolve(this.cwd, params.restartFile)));
 		}
 
 		return {
 			"entry": entryFile,
 			"output": {
 				path: this.cwd,
-				filename: cfg.outputFile,
-				chunkFilename: cfg.outputFile.replace(/\.js$/, '.[name].js'),
-				publicPath: cfg.publicPath,
+				filename: params.outputFile,
+				chunkFilename: params.outputFile.replace(/\.js$/, '.[name].js'),
+				publicPath: params.publicPath,
 			},
 			"plugins[]": plugins,
 		};
 	}
 
 	generateConfig(env) {
+		const whConfig = JSON.parse(env.webpackHereConfig);
+
 		let config;
 
 		// Generate base config with defaut overrides (entry, output)
 		config = this.baseConfig;
-		config = this.applyOverride(config, this.generateLocalOverride(env));
+		config = this.applyOverride(config, this.generateLocalOverride(env, whConfig));
 
 		const customConfigFile = `${this.cwd}/${this.customConfigFile}`;
 
@@ -252,6 +253,11 @@ class WebpackHere {
 
 			// We've got user override -- apply it
 			config = this.applyOverride(config, require(customConfigFile));
+		}
+
+		if(whConfig.debug) {
+			console.log(config);
+			process.exit();
 		}
 
 		return config;
