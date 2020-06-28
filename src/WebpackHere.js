@@ -96,7 +96,7 @@ class WebpackHere {
 
 		if(FS.existsSync(ROOT + executable)) {
 			return ROOT + executable;
-	}
+		}
 
 		return ROOT + '/../../' + executable;
 	}
@@ -134,7 +134,7 @@ class WebpackHere {
 				ignored: [`/node_modules/`],
 			},
 			plugins: [
-				new Webpack.HashedModuleIdsPlugin(),
+				new Webpack['HashedModuleIdsPlugin'](),
 				new LogOnCompile('WebpackHere'),
 			],
 			stats: {
@@ -280,7 +280,7 @@ class WebpackHere {
 	 * If original value exists, it determines a merge type. Otherwise new key will be added.
 	 */
 	/**
-	 * @typedef {Object.<OverridePath, any>} Override
+	 * @typedef {Object.<OverridePath, *>} Override
 	 */
 	/**
 	 * Applies override to an object.
@@ -365,8 +365,8 @@ class WebpackHere {
 
 	get isConfigMode() {
 		if(process.platform === 'win32') {
-		return /webpack-here\.js$/.test(process.argv[1]) === false;
-	}
+			return /webpack-here\.js$/.test(process.argv[1]) === false;
+		}
 
 		return /webpack-here$/.test(process.argv[1]) === false;
 	}
