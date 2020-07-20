@@ -110,8 +110,8 @@ class WebpackHere {
 	}
 
 	get webpackHereConfig() {
-		const {entryFile, outputFile, restartFile, publicPath, debug} = this;
-		return {entryFile, outputFile, restartFile, publicPath, debug};
+		const {entryFile, outputFile, restartFile, publicPath, customConfigFile, debug} = this;
+		return {entryFile, outputFile, restartFile, publicPath, customConfigFile, debug};
 	}
 
 	get webpackHereConfigParams() {
@@ -243,13 +243,10 @@ class WebpackHere {
 	generateConfig(env) {
 		const whConfig = JSON.parse(env.webpackHereConfig);
 
-		let config;
-
 		// Generate base config with defaut overrides (entry, output)
-		config = this.baseConfig;
-		config = this.applyOverride(config, this.generateLocalOverride(env, whConfig));
+		let config = this.applyOverride(this.baseConfig, this.generateLocalOverride(env, whConfig));
 
-		const customConfigFile = `${this.cwd}/${this.customConfigFile}`;
+		const customConfigFile = Path.resolve(whConfig.customConfigFile);
 
 		if(FS.existsSync(customConfigFile)) {
 			console.log('Applying custom config override from', customConfigFile);
